@@ -342,9 +342,39 @@ def execute_order(symbol, order_type, lot_size, sl_pips, tp_pips, magic_number):
     logging.info(f"Successfully placed Scalping 90% order {request['comment']} on {symbol}. Retcode: {result.retcode}")
     return True
 
+import datetime
+
+def verify_license(config_data):
+    acc_info = mt5.account_info()
+    if not acc_info:
+        return False, "Gagal membaca data akun MT5."
+        
+    user_login = acc_info.login
+    allowed_accounts = config_data.get("allowed_account_numbers", [])
+    if allowed_accounts and len(allowed_accounts) > 0:
+        if user_login not in allowed_accounts:
+            return False, f"AKUN TERKUNCI: Nomor Akun MT5 ({user_login}) tidak terdaftar dalam lisensi sah!"
+
+    expire_date_str = config_data.get("license_expire_date", "").strip()
+    if expire_date_str:
+        try:
+            expire_date = datetime.datetime.strptime(expire_date_str, "%Y-%m-%d")
+            today = datetime.datetime.now()
+            if today > expire_date:
+                return False, f"LISENSI KADALUARSA: Masa sewa lisensi bot telah berakhir pada {expire_date_str}!"
+        except ValueError:
+            pass
+
+    return True, "LICENSE_VALID"
+
 def run_bot_cycle(symbol, timeframe_str, lot_size, sl_pips, tp_pips, magic_number, config_data):
     global last_processed_candles
-    
+
+    valid, lic_msg = verify_license(config_data)
+    if not valid:
+        logging.error(f"SECURITY LOCK: {lic_msg}")
+        return
+        
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
         mt5.symbol_select(symbol, True)
