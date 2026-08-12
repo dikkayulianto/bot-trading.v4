@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scalping Bot Win Rate 90%+ - Port 5006</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="brand-logo">
+                <div class="blue-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="brand-text">
+                    <h1>STRATEGI SCALPING 90%+ WIN RATE</h1>
+                    <span class="sub-brand"><i class="fa-solid fa-bullseye"></i> EMA (9/21) + RSI (14) > 50 + MACD (12,26,9) • Port 5006</span>
+                </div>
+            </div>
+
+            <div class="status-badges">
+                <div class="badge-item">
+                    <span class="badge-label">MT5 CONNECTION</span>
+                    <span id="badge-mt5" class="status-pill offline"><i class="fa-solid fa-circle"></i> DISCONNECTED</span>
+                </div>
+                <div class="badge-item">
+                    <span class="badge-label">BOT SCALPER 90%</span>
+                    <span id="badge-bot" class="status-pill stopped"><i class="fa-solid fa-circle"></i> STOPPED</span>
+                </div>
+                <div class="action-buttons">
+                    <button id="btn-start" class="btn btn-primary" onclick="startScalper()"><i class="fa-solid fa-play"></i> Start Bot 90%</button>
+                    <button id="btn-stop" class="btn btn-danger" onclick="stopScalper()" disabled><i class="fa-solid fa-stop"></i> Stop</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid">
+            <!-- Sidebar Form Controls -->
+            <aside class="sidebar-panel">
+                <!-- Account Summary Card -->
+                <div class="glass-card account-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-wallet" style="color: var(--accent-blue);"></i> AKUN METATRADER 5</h3>
+                        <span id="stat-company" class="server-tag">-</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-lbl">LOGIN ID</span>
+                            <span id="stat-login" class="stat-val">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-lbl">BALANCE</span>
+                            <span id="stat-balance" class="stat-val">$0.00</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-lbl">EQUITY</span>
+                            <span id="stat-equity" class="stat-val">$0.00</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-lbl">FLOATING P/L</span>
+                            <span id="stat-floating" class="stat-val profit-neutral">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy Parameter Form -->
+                <div class="glass-card config-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-sliders" style="color: var(--accent-blue);"></i> ATURAN SCALPING 90%</h3>
+                        <button class="btn btn-sm btn-outline" onclick="saveConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+                    </div>
+                    <form id="scalping-form" class="config-form">
+                        <div class="form-group">
+                            <label>Daftar Pasangan Mata Uang (Pisahkan Koma)</label>
+                            <input type="text" class="form-ctrl" id="cfg-symbols" value="{{ config.symbols | join(', ') }}">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Timeframe</label>
+                                <select class="form-ctrl" id="cfg-timeframe">
+                                    <option value="M5" {% if config.timeframe == 'M5' %}selected{% endif %}>M5 (Rekomendasi 5m)</option>
+                                    <option value="M15" {% if config.timeframe == 'M15' %}selected{% endif %}>M15 (Rekomendasi 15m)</option>
+                                    <option value="H1" {% if config.timeframe == 'H1' %}selected{% endif %}>H1 (Trend 1 Jam)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Lot Size</label>
+                                <input type="number" step="0.01" class="form-ctrl" id="cfg-lot" value="{{ config.lot_size }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Stop Loss (Pips / 1%)</label>
+                                <input type="number" step="0.1" class="form-ctrl" id="cfg-sl" value="{{ config.sl_pips }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Take Profit (Pips / 2%)</label>
+                                <input type="number" step="0.1" class="form-ctrl" id="cfg-tp" value="{{ config.tp_pips }}">
+                            </div>
+                        </div>
+
+                        <div class="form-section-title"><i class="fa-solid fa-calculator"></i> INDIKATOR PRESISI (EMA 9/21, RSI 14, MACD 12/26/9)</div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>EMA Fast (9)</label>
+                                <input type="number" class="form-ctrl" id="cfg-ema-fast" value="{{ config.ema_fast }}">
+                            </div>
+                            <div class="form-group">
+                                <label>EMA Slow (21)</label>
+                                <input type="number" class="form-ctrl" id="cfg-ema-slow" value="{{ config.ema_slow }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>RSI Period (14)</label>
+                                <input type="number" class="form-ctrl" id="cfg-rsi" value="{{ config.rsi_period }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Interval Cek (Detik)</label>
+                                <input type="number" class="form-ctrl" id="cfg-interval" value="{{ config.loop_interval_seconds }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>MACD Fast (12)</label>
+                                <input type="number" class="form-ctrl" id="cfg-macd-fast" value="{{ config.macd_fast }}">
+                            </div>
+                            <div class="form-group">
+                                <label>MACD Slow (26)</label>
+                                <input type="number" class="form-ctrl" id="cfg-macd-slow" value="{{ config.macd_slow }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>MACD Signal (9)</label>
+                                <input type="number" class="form-ctrl" id="cfg-macd-sig" value="{{ config.macd_signal }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Min Confidence Score (%)</label>
+                                <input type="number" class="form-ctrl" id="cfg-conf" value="{{ config.min_confidence }}">
+                            </div>
+                        </div>
+
+                        <div class="form-section-title"><i class="fa-solid fa-key"></i> KUNCI API AI VALIDATOR (GROQ / GEMINI)</div>
+
+                        <div class="form-group">
+                            <label>Groq API Key (Primary Validator)</label>
+                            <input type="password" class="form-ctrl" id="cfg-groq-key" value="{{ config.groq_api_key }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gemini API Key (Backup Validator)</label>
+                            <input type="password" class="form-ctrl" id="cfg-gemini-key" value="{{ config.gemini_api_key }}">
+                        </div>
+
+                        <input type="hidden" id="cfg-magic" value="{{ config.magic_number }}">
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Center/Right Display Area -->
+            <section class="main-display">
+                <!-- Candlestick Chart Panel -->
+                <div class="glass-card chart-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-candlestick" style="color: var(--accent-blue);"></i> GRAFIK REAL-TIME SCALPING 90%</h3>
+                        <div class="symbol-selector-box">
+                            <select id="symbol-select" class="symbol-dropdown" onchange="switchChartSymbol()">
+                                <!-- Dynamic options -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div id="tradingview-chart-box" class="tv-box"></div>
+                    </div>
+                </div>
+
+                <!-- Scalping Signal Verification Panel -->
+                <div class="glass-card analysis-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-circle-check" style="color: var(--accent-blue);"></i> STATUS SYARAT EKSEKUSI STRATEGI SCALPING 90%</h3>
+                        <button class="btn btn-primary btn-sm" onclick="runInstant90Analysis()">
+                            <span id="btn-analyze-text"><i class="fa-solid fa-rotate"></i> ⚡ Analisis Setup Instan</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 3 Indicator Rules Status Badges -->
+                    <div class="rules-status-grid">
+                        <div class="rule-card" id="rule-ema-box">
+                            <div class="rule-title">1. EMA Crossover</div>
+                            <div class="rule-status" id="rule-ema-val">Checking...</div>
+                            <div class="rule-sub" id="rule-ema-sub">EMA 9 vs EMA 21</div>
+                        </div>
+                        <div class="rule-card" id="rule-rsi-box">
+                            <div class="rule-title">2. RSI (14) Filter</div>
+                            <div class="rule-status" id="rule-rsi-val">Checking...</div>
+                            <div class="rule-sub" id="rule-rsi-sub">>50 (BUY) / <50 (SELL)</div>
+                        </div>
+                        <div class="rule-card" id="rule-macd-box">
+                            <div class="rule-title">3. MACD Line vs Signal</div>
+                            <div class="rule-status" id="rule-macd-val">Checking...</div>
+                            <div class="rule-sub" id="rule-macd-sub">MACD Line vs Signal Line</div>
+                        </div>
+                        <div class="rule-card highlight" id="rule-target-box">
+                            <div class="rule-title">Target Win Rate & R:R</div>
+                            <div class="rule-status text-gold">90.42% (RR 1:2)</div>
+                            <div class="rule-sub">SL 1.0% | TP 2.0%</div>
+                        </div>
+                    </div>
+
+                    <div id="ai-report-panel" class="report-panel">
+                        <div class="empty-state">
+                            Klik <strong>"⚡ Analisis Setup Instan"</strong> untuk mengevaluasi syarat EMA 9/21, RSI 14, dan MACD secara real-time.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Grid: Summary Table & Logs -->
+                <div class="bottom-panels-grid">
+                    <!-- Open Positions -->
+                    <div class="glass-card pos-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list-check" style="color: var(--accent-blue);"></i> POSISI AKTIF STRATEGI 90%</h3>
+                        </div>
+                        <div class="table-box">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket</th>
+                                        <th>Simbol</th>
+                                        <th>Tipe</th>
+                                        <th>Lot</th>
+                                        <th>Open</th>
+                                        <th>Live</th>
+                                        <th>SL (1%)</th>
+                                        <th>TP (2%)</th>
+                                        <th>Profit ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pos-table-body">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">Tidak ada posisi terbuka saat ini.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Live Log Console -->
+                    <div class="glass-card log-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-terminal" style="color: var(--accent-blue);"></i> KONSOL LOG AKTIVITAS</h3>
+                            <button class="btn btn-outline btn-sm" onclick="clearConsoleUI()"><i class="fa-solid fa-eraser"></i> Clear</button>
+                        </div>
+                        <div id="log-console" class="console-box"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
