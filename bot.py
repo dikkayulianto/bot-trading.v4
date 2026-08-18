@@ -182,8 +182,11 @@ def get_groq_scalping_analysis(symbol, timeframe_str, groq_api_key, config_data,
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": prompt}],
+        "model": "groq/compound-mini",
+        "messages": [
+            {"role": "system", "content": "You are a professional trading analyst assistant. Respond ONLY in valid json format."},
+            {"role": "user", "content": prompt}
+        ],
         "response_format": {"type": "json_object"},
         "temperature": 0.1
     }
@@ -191,13 +194,22 @@ def get_groq_scalping_analysis(symbol, timeframe_str, groq_api_key, config_data,
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=20)
         if response.status_code != 200:
-            payload["model"] = "llama-3.1-8b-instant"
+            payload["model"] = "openai/gpt-oss-20b"
             response = requests.post(url, headers=headers, json=payload, timeout=20)
             if response.status_code != 200:
                 return {"status": "error", "message": f"Groq API HTTP {response.status_code}"}
                 
         response_data = response.json()
         ai_text = response_data['choices'][0]['message']['content']
+        if "```" in ai_text:
+            parts = ai_text.split("```")
+            for part in parts:
+                part_str = part.strip()
+                if part_str.startswith("json"):
+                    part_str = part_str[4:].strip()
+                if part_str.startswith("{"):
+                    ai_text = part_str
+                    break
         ai_json = json.loads(ai_text)
         
         return {

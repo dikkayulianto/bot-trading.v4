@@ -200,8 +200,8 @@ def api_ai_analysis_90():
         }
         bot.save_latest_ai_results(latest_results)
         return jsonify({"status": "success", "data": clean_result})
-    return jsonify({"status": "error", "message": result["message"]}), 500
+    return jsonify({"status": "error", "message": result.get("message", "Analisis gagal. Silakan coba lagi.")}), 500
 
 if __name__ == "__main__":
     print("Starting Scalping 90% Win Rate Bot on Port 5006...")
-    app.run(host="0.0.0.0", port=5006, debug=True)
+    app.run(host="0.0.0.0", port=5006, debug=False, use_reloader=False)
