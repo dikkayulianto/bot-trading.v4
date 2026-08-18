@@ -194,10 +194,17 @@ def get_groq_scalping_analysis(symbol, timeframe_str, groq_api_key, config_data,
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=20)
         if response.status_code != 200:
+            if response.status_code == 429:
+                time.sleep(1.5)
             payload["model"] = "openai/gpt-oss-20b"
             response = requests.post(url, headers=headers, json=payload, timeout=20)
             if response.status_code != 200:
-                return {"status": "error", "message": f"Groq API HTTP {response.status_code}"}
+                if response.status_code == 429:
+                    time.sleep(1.5)
+                payload["model"] = "openai/gpt-oss-120b"
+                response = requests.post(url, headers=headers, json=payload, timeout=20)
+                if response.status_code != 200:
+                    return {"status": "error", "message": f"Groq API HTTP {response.status_code}"}
                 
         response_data = response.json()
         ai_text = response_data['choices'][0]['message']['content']
