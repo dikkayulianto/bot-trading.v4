@@ -200,6 +200,48 @@
                     </div>
                 </div>
 
+                <!-- GainzAlgo V2 Alpha Signal Widget -->
+                <div class="glass-card gainzalgo-card mb-4">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-bolt-lightning" style="color: #00ff88;"></i> INDIKATOR GAINZALGO V2 ALPHA</h3>
+                        <div class="header-actions">
+                            <span class="gainz-badge-tag"><i class="fa-solid fa-shield-halved"></i> SIGNAL HUD</span>
+                            <button class="btn btn-sm btn-gainz" onclick="runGainzAlgoScan()">
+                                <i class="fa-solid fa-crosshairs"></i> GainzAlgo Scan
+                            </button>
+                        </div>
+                    </div>
+                    <div class="gainz-display-box" id="gainz-display-box">
+                        <div class="gainz-preview-container">
+                            <div class="gainz-signal-badge buy" id="gainz-badge-box">
+                                <div class="gainz-tooltip" id="gainz-tooltip">
+                                    <div class="tp-line">TP: <span id="gainz-tp">--.--</span></div>
+                                    <div class="sl-line">SL: <span id="gainz-sl">--.--</span></div>
+                                </div>
+                                <div class="signal-text" id="gainz-signal-lbl">READY</div>
+                            </div>
+                            <div class="gainz-meta-grid">
+                                <div class="gainz-meta-box">
+                                    <span class="lbl">ENTRY PRICE</span>
+                                    <span class="val" id="gainz-entry">--.--</span>
+                                </div>
+                                <div class="gainz-meta-box">
+                                    <span class="lbl">RISK:REWARD</span>
+                                    <span class="val" id="gainz-rr" style="color: #00ff88;">1:2.0</span>
+                                </div>
+                                <div class="gainz-meta-box">
+                                    <span class="lbl">VOLATILITY (ATR)</span>
+                                    <span class="val" id="gainz-atr">--.--</span>
+                                </div>
+                                <div class="gainz-meta-box">
+                                    <span class="lbl">TREND POWER</span>
+                                    <span class="val" id="gainz-power">--.--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Scalping Signal Verification Panel -->
                 <div class="glass-card analysis-card">
                     <div class="card-header">

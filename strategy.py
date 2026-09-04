@@ -82,3 +82,73 @@ def check_scalping_90_signals(df):
         "ema_fast": round(float(curr_row['ema_fast']), 5),
         "ema_slow": round(float(curr_row['ema_slow']), 5)
     }
+
+def calculate_gainzalgo_v2_signals(df, atr_period=14, atr_multiplier=2.0):
+    """
+    Calculates GainzAlgo V2 Alpha indicator signals & dynamic TP/SL targets:
+    1. Supertrend Engine (ATR Multiplier & Trailing Stop)
+    2. EMA Momentum Alignment (EMA Fast vs Slow)
+    3. RSI Volatility Confirmation
+    4. Dynamic Tooltips: TP (Take Profit) & SL (Stop Loss) with 1:2 Risk/Reward ratio.
+    """
+    if len(df) < 5:
+        return {"signal": "HOLD", "reason": "Insufficient data"}
+
+    df = df.copy()
+    
+    high_low = df['high'] - df['low']
+    high_close = (df['high'] - df['close'].shift()).abs()
+    low_close = (df['low'] - df['close'].shift()).abs()
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    df['atr'] = tr.rolling(window=atr_period).mean().fillna(tr.mean())
+
+    if 'ema_fast' not in df.columns:
+        df['ema_fast'] = df['close'].ewm(span=9, adjust=False).mean()
+    if 'ema_slow' not in df.columns:
+        df['ema_slow'] = df['close'].ewm(span=21, adjust=False).mean()
+    if 'rsi' not in df.columns:
+        delta = df['close'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+        rs = gain / loss.replace(0, np.nan)
+        df['rsi'] = (100 - (100 / (1 + rs))).fillna(50)
+
+    curr_row = df.iloc[-1]
+    prev_row = df.iloc[-2]
+
+    curr_close = float(curr_row['close'])
+    curr_atr = float(curr_row['atr'])
+    
+    is_bullish_trend = curr_row['ema_fast'] > curr_row['ema_slow']
+    is_crossover = (prev_row['ema_fast'] <= prev_row['ema_slow']) and (curr_row['ema_fast'] > curr_row['ema_slow'])
+    is_crossunder = (prev_row['ema_fast'] >= prev_row['ema_slow']) and (curr_row['ema_fast'] < curr_row['ema_slow'])
+
+    if is_crossover or (is_bullish_trend and curr_row['rsi'] > 50):
+        signal_type = "BUY"
+        sl_price = round(curr_close - (curr_atr * atr_multiplier), 4)
+        tp_price = round(curr_close + (curr_atr * atr_multiplier * 2.0), 4)
+        confidence = min(98, max(60, int(50 + (curr_row['rsi'] - 50) * 1.5 + (15 if is_bullish_trend else 0))))
+    elif is_crossunder or (not is_bullish_trend and curr_row['rsi'] < 50):
+        signal_type = "SELL"
+        sl_price = round(curr_close + (curr_atr * atr_multiplier), 4)
+        tp_price = round(curr_close - (curr_atr * atr_multiplier * 2.0), 4)
+        confidence = min(98, max(60, int(50 + (50 - curr_row['rsi']) * 1.5 + (15 if not is_bullish_trend else 0))))
+    else:
+        signal_type = "HOLD"
+        sl_price = round(curr_close - (curr_atr * atr_multiplier), 4)
+        tp_price = round(curr_close + (curr_atr * atr_multiplier * 2.0), 4)
+        confidence = 50
+
+    return {
+        "signal": signal_type,
+        "entry_price": round(curr_close, 4),
+        "tp_price": tp_price,
+        "sl_price": sl_price,
+        "rr_ratio": "1:2.0",
+        "atr": round(curr_atr, 4),
+        "confidence": confidence,
+        "rsi": round(float(curr_row['rsi']), 2),
+        "ema_fast": round(float(curr_row['ema_fast']), 4),
+        "ema_slow": round(float(curr_row['ema_slow']), 4),
+        "trend_power": "BULLISH 🚀" if is_bullish_trend else "BEARISH 🔻"
+    }

@@ -454,3 +454,146 @@ body {
 .badge-buy { background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; }
 .badge-sell { background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; }
 .badge-hold { background: rgba(156, 163, 175, 0.2); color: var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; }
+
+/* GainzAlgo V2 Alpha Widget Styling */
+.gainzalgo-card {
+    background: linear-gradient(135deg, rgba(13, 17, 23, 0.95), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 255, 136, 0.08);
+}
+
+.gainz-badge-tag {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.btn-gainz {
+    background: linear-gradient(135deg, #00e676, #00b0ff);
+    color: #000;
+    font-weight: 700;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-gainz:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.5);
+}
+
+.gainz-display-box {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gainz-preview-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.gainz-signal-badge {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 60px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    margin-top: 30px;
+}
+
+.gainz-signal-badge.buy {
+    background: linear-gradient(180deg, #00e676 0%, #00a843 100%);
+    color: #000;
+    border: 2px solid #69f0ae;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+}
+
+.gainz-signal-badge.sell {
+    background: linear-gradient(180deg, #ff1744 0%, #b2102f 100%);
+    color: #fff;
+    border: 2px solid #ff5252;
+    box-shadow: 0 0 20px rgba(255, 23, 68, 0.6);
+}
+
+.gainz-signal-badge.hold {
+    background: linear-gradient(180deg, #4b5563 0%, #1f2937 100%);
+    color: #9ca3af;
+    border: 2px solid #6b7280;
+}
+
+.gainz-tooltip {
+    position: absolute;
+    top: -46px;
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: #e5e7eb;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.gainz-tooltip:after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: rgba(17, 24, 39, 0.95) transparent;
+    display: block;
+    width: 0;
+}
+
+.gainz-tooltip .tp-line { color: #00ff88; font-weight: 700; }
+.gainz-tooltip .sl-line { color: #ff4949; font-weight: 700; }
+
+.gainz-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    flex: 1;
+}
+
+.gainz-meta-box {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.gainz-meta-box .lbl {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.gainz-meta-box .val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+.mb-4 { margin-bottom: 1.5rem; }

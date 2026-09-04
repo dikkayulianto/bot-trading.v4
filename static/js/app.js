@@ -328,3 +328,48 @@ function formatMoney(val) {
     if (val === null || val === undefined) return "0.00";
     return val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+async function runGainzAlgoScan() {
+    try {
+        const symbol = currentSymbol || "XAUUSD";
+        const timeframe = document.getElementById("cfg-timeframe")?.value || "M5";
+        const res = await fetch("/api/gainzalgo-v2", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symbol, timeframe })
+        });
+        const json = await res.json();
+        if (json.status === "success" && json.data) {
+            updateGainzAlgoWidget(json.data);
+        }
+    } catch (e) {
+        console.error("GainzAlgo scan error:", e);
+    }
+}
+
+function updateGainzAlgoWidget(data) {
+    const badge = document.getElementById("gainz-badge-box");
+    const lbl = document.getElementById("gainz-signal-lbl");
+    const tp = document.getElementById("gainz-tp");
+    const sl = document.getElementById("gainz-sl");
+    const entry = document.getElementById("gainz-entry");
+    const rr = document.getElementById("gainz-rr");
+    const atr = document.getElementById("gainz-atr");
+    const power = document.getElementById("gainz-power");
+
+    if (badge) {
+        badge.className = `gainz-signal-badge ${data.signal.toLowerCase()}`;
+    }
+    if (lbl) lbl.textContent = data.signal;
+    if (tp) tp.textContent = data.tp_price ? data.tp_price : "--.--";
+    if (sl) sl.textContent = data.sl_price ? data.sl_price : "--.--";
+    if (entry) entry.textContent = data.entry_price ? data.entry_price : "--.--";
+    if (rr) rr.textContent = data.rr_ratio || "1:2.0";
+    if (atr) atr.textContent = data.atr || "--.--";
+    if (power) power.textContent = data.trend_power || "--.--";
+}
+
+// Automatically scan GainzAlgo on page load
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(runGainzAlgoScan, 1000);
+});

@@ -202,6 +202,18 @@ def api_ai_analysis_90():
         return jsonify({"status": "success", "data": clean_result})
     return jsonify({"status": "error", "message": result.get("message", "Analisis gagal. Silakan coba lagi.")}), 500
 
+@app.route("/api/gainzalgo-v2", methods=["GET", "POST"])
+def api_gainzalgo_v2():
+    config_data = read_config()
+    data = request.get_json(silent=True) or {}
+    symbol = data.get("symbol", config_data.get("symbols", ["XAUUSD"])[0])
+    timeframe = data.get("timeframe", config_data.get("timeframe", "M5"))
+    res = bot.run_gainzalgo_v2_scan(symbol, timeframe)
+    if res["status"] == "success":
+        clean_data = json.loads(json.dumps(res["data"], default=bot.json_serialize_helper))
+        return jsonify({"status": "success", "data": clean_data})
+    return jsonify({"status": "error", "message": res.get("message", "Gagal memindai GainzAlgo V2")}), 500
+
 if __name__ == "__main__":
     print("Starting Scalping 90% Win Rate Bot on Port 5006...")
     app.run(host="0.0.0.0", port=5006, debug=False, use_reloader=False)

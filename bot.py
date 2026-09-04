@@ -465,3 +465,28 @@ def run_bot_cycle(symbol, timeframe_str, lot_size, sl_pips, tp_pips, magic_numbe
                 execute_order(symbol, mt5.ORDER_TYPE_SELL, lot_size, sl_pips, tp_pips, magic_number)
         else:
             logging.info(f"Scalping 90% trade skipped due to confidence ({ai_conf}% < {min_conf}%).")
+        return
+
+def run_gainzalgo_v2_scan(symbol, timeframe_str="M5"):
+    try:
+        if not mt5.terminal_info():
+            mt5.initialize()
+    except Exception:
+        pass
+    symbol_info = mt5.symbol_info(symbol)
+    if symbol_info is None:
+        mt5.symbol_select(symbol, True)
+        symbol_info = mt5.symbol_info(symbol)
+    if symbol_info is None:
+        return {"status": "error", "message": f"Simbol {symbol} tidak ditemukan di MT5."}
+
+    mt5_tf = TIMEFRAME_MAP.get(timeframe_str, mt5.TIMEFRAME_M5)
+    df = get_historical_data(symbol, mt5_tf, count=60)
+    if df is None or len(df) < 20:
+        return {"status": "error", "message": f"Data historis {symbol} tidak cukup."}
+
+    df = strategy.calculate_90pct_scalping_indicators(df)
+    gainz_data = strategy.calculate_gainzalgo_v2_signals(df)
+    gainz_data["symbol"] = symbol
+    gainz_data["timeframe"] = timeframe_str
+    return {"status": "success", "data": gainz_data}
